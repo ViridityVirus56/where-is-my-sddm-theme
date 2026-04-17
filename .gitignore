@@ -2,3 +2,10 @@
 *.tar.gz
 *.zip
 *.tar
+
+# Videos
+*.mp4
+*.webm
+*.avi
+*.mkv
+*.mov

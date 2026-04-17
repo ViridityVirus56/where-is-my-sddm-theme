@@ -1,5 +1,6 @@
 import QtQuick 2.15
 import QtQuick.Controls 2.0
+import QtMultimedia
 import SddmComponents 2.0
 
 import Qt5Compat.GraphicalEffects
@@ -186,7 +187,23 @@ Rectangle {
                 source: config.stringValue("background")
                 smooth: true
                 fillMode: bgFillMode()
+                z: 1
+            }
+            MediaPlayer {
+                id: player
+                autoPlay: true
+                videoOutput: videoOutput
+                loops: MediaPlayer.Infinite
+                audioOutput: AudioOutput {
+                    muted: true
+                }
+            }
+            VideoOutput {
+                id: videoOutput
+                anchors.fill: parent
+                fillMode: VideoOutput.PreserveAspectCrop
                 z: 2
+                visible: player.playbackState === MediaPlayer.PlayingState
             }
 
             Rectangle {
@@ -211,8 +228,8 @@ Rectangle {
             FastBlur {
                 id: fastBlur
                 z: 3
-                anchors.fill: image
-                source: image
+                anchors.fill: background
+                source: player.playbackState === MediaPlayer.PlayingState ? videoOutput : image
                 radius: config.intValue("blurRadius")
             }
 
@@ -364,6 +381,18 @@ Rectangle {
 
         Component.onCompleted: {
             passwordInput.forceActiveFocus();
+
+            var path = config.stringValue('backgroundVideo');
+            var extension = path ? path.substring(path.lastIndexOf(".") + 1).toLowerCase() : "";
+            const videoTypes = ["mp4", "webm", "avi", "mkv", "mov"];
+
+            if(videoTypes.includes(extension)) {
+                player.source = Qt.resolvedUrl(path);
+                player.play();
+            }
+            else {
+                image.source = config.background || config.Background;
+            }
         }
 
     }
